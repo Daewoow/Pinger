@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 
 class IcmpPinger(Pinger):
-    async def alert(self, project: Dict[str, Any]):
+    async def check(self, project: Dict[str, Any]):
         target = project.get("host") or project.get("url")
 
         timeout = project.get("timeout_s", 5)
@@ -21,8 +21,8 @@ class IcmpPinger(Pinger):
             if rc == 0:
                 return True
             else:
-                await self.record_error(project, f"ping rc={rc} stdout={out.decode()[:200]}")
+                await self.alert_error(project, f"ping rc={rc} stdout={out.decode()[:200]}")
             return False
         except Exception as e:
-            await self.record_error(project, str(e))
+            await self.alert_error(project, str(e))
         return False

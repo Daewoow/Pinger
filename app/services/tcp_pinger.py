@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 
 class TcpPinger(Pinger):
-    async def alert(self, project: Dict[str, Any]):
+    async def check(self, project: Dict[str, Any]):
         host = project.get("host") or project.get("url")
         port = project.get("port") or 80
         timeout = project.get("timeout_s", 10)
@@ -18,5 +18,5 @@ class TcpPinger(Pinger):
                 pass
             return True
         except Exception as e:
-            await self.record_error(project, str(e))
+            await self.alert_error(project, str(e))
         return False
