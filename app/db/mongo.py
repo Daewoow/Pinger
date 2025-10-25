@@ -16,5 +16,11 @@ def get_projects_collection():
     return get_mongo_client().monitoring.projects
 
 
+def close_mongo_client():
+    global _mongo_client
+    if _mongo_client is not None and _mongo_client.is_connected():
+        _mongo_client.close()
+
+
 def get_errors_collection():
     return get_mongo_client().monitoring.errors
