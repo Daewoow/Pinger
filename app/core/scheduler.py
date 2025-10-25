@@ -1,25 +1,40 @@
 import asyncio
 from typing import Dict
 from app.db.mongo import get_projects_collection
-from app.services.http_alerter import do_http_check
+from app.services.tg_notify import Notifier
+from app.services.pinger_factory import PingerFactory
 
 _tasks: Dict[str, asyncio.Task] = {}
 
 
 async def _run_project_loop(project_doc):
     interval = project_doc.get("interval_s", 60)
+    project_id = str(project_doc.get("_id"))
+    coll = get_projects_collection()
     while True:
         ok = True
-        if project_doc.get("type") == "HTTP":
-            ok = await do_http_check(project_doc)
-
-        coll = get_projects_collection()
+        ttype = project_doc.get("type")
+        alerter = PingerFactory.create(ttype)
+        await alerter.alert(project_doc)
         await coll.update_one(
-            {"_id": project_doc["_id"]},
+            {"_id": project_id},
             {"$set": {"last_run_at": __import__("datetime").datetime.utcnow()}}
         )
         if not ok and project_doc.get("stop_on_error", True):
-            await coll.update_one({"_id": project_doc["_id"]}, {"$set": {"status": "stopped"}})
+            await coll.update_one(
+                {"_id": project_id},
+                {"$set": {"status": "stopped"}}
+            )
+
+            chat = project_doc.get("owner_telegram_chat_id")
+            if chat:
+                try:
+                    await Notifier().send_telegram(
+                        chat,
+                        f"[Monitoring] Project {project_doc.get('name')} stopped due to error"
+                    )
+                except Exception:
+                    pass
             break
         await asyncio.sleep(interval)
 

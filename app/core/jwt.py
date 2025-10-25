@@ -3,9 +3,9 @@ import jwt
 from app.config import settings
 
 
-def create_access_token(subject: str) -> str:
+def create_access_token(subject: str, expires_in: int = 3600) -> str:
     now = int(time.time())
-    payload = {"sub": subject, "iat": now, "exp": now + settings.ACCESS_TOKEN_EXPIRE_SECONDS}
+    payload = {"sub": subject, "iat": now, "exp": now + expires_in}
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 

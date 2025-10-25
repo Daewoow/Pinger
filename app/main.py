@@ -1,39 +1,30 @@
-import logging
 import uvicorn
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, projects
+from contextlib import asynccontextmanager
+
+from app.api.routes import auth, projects, teleram
 from app.db.mongo import get_mongo_client
 from app.core.scheduler import restore_running_projects
 
-app = FastAPI()
 
-app.include_router(auth.router, prefix="/api")
-app.include_router(projects.router, prefix="/api")
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("alerter:main")
-
-
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     get_mongo_client()
-    await restore_running_projects()
+    try:
+        await restore_running_projects()
+    except Exception:
+        pass
 
-
-@app.on_event("shutdown")
-async def shutdown():
+    yield
     pass
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-    allow_credentials=True
-)
+
+app = FastAPI(title="Pinger", lifespan=lifespan)
+
+app.include_router(auth.router, prefix="/api/auth")
+app.include_router(projects.router, prefix="/api/projects")
+app.include_router(teleram.router, prefix="/api/telegram")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="localhost", port=5123, reload=True)
-
+    uvicorn.run(app, host="127.0.0.1", port=5123)

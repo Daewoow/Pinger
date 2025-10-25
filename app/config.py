@@ -9,8 +9,11 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
 
     MONGO_URL: str
+
     JWT_SECRET: str = "123"
     JWT_ALGORITHM: str = "HS256"
+
+    TELEGRAM_BOT_TOKEN: str
 
     @property
     def database_url(self) -> str:
