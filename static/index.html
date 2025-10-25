@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinger Frontend</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .section { margin-bottom: 40px; }
+        #output { margin-top: 20px; border: 1px solid #ddd; padding: 10px; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Pinger Dashboard</h1>
+        <div class="section">
+            <h2>Authentication</h2>
+            <ul class="nav nav-tabs" id="authTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab">Register</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">Login</button>
+                </li>
+            </ul>
+            <div class="tab-content mt-3">
+                <div class="tab-pane fade show active" id="register" role="tabpanel">
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <label for="regEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="regEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="regPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
+                <div class="tab-pane fade" id="login" role="tabpanel">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+            </div>
+            <div id="authOutput" class="output"></div>
+        </div>
+
+        <div class="section" id="projectsSection" style="display: none;">
+            <h2>Projects</h2>
+            <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="create-project-tab" data-bs-toggle="tab" data-bs-target="#createProject" type="button" role="tab">Create Project</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="manage-project-tab" data-bs-toggle="tab" data-bs-target="#manageProject" type="button" role="tab">Manage Project</button>
+                </li>
+            </ul>
+            <div class="tab-content mt-3">
+                <div class="tab-pane fade show active" id="createProject" role="tabpanel">
+                    <form id="createProjectForm">
+                        <div class="mb-3">
+                            <label for="projectName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="projectName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="projectType" class="form-label">Type</label>
+                            <select class="form-select" id="projectType" required>
+                                <option value="HTTP">HTTP</option>
+                                <option value="TCP">TCP</option>
+                                <option value="ICMP">ICMP</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="projectUrl" class="form-label">URL (for HTTP)</label>
+                            <input type="url" class="form-control" id="projectUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label for="projectHost" class="form-label">Host (for TCP/ICMP)</label>
+                            <input type="text" class="form-control" id="projectHost">
+                        </div>
+                        <div class="mb-3">
+                            <label for="projectPort" class="form-label">Port (for TCP)</label>
+                            <input type="number" class="form-control" id="projectPort">
+                        </div>
+                        <div class="mb-3">
+                            <label for="projectHeaders" class="form-label">Headers (JSON)</label>
+                            <textarea class="form-control" id="projectHeaders" rows="3">{}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="projectInterval" class="form-label">Interval (seconds)</label>
+                            <input type="number" class="form-control" id="projectInterval" value="60" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="projectTimeout" class="form-label">Timeout (seconds)</label>
+                            <input type="number" class="form-control" id="projectTimeout" value="10" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="projectStopOnError" checked>
+                            <label class="form-check-label" for="projectStopOnError">Stop on Error</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Project</button>
+                    </form>
+                </div>
+                <div class="tab-pane fade" id="manageProject" role="tabpanel">
+                    <div class="mb-3">
+                        <label for="projectId" class="form-label">Project ID</label>
+                        <input type="text" class="form-control" id="projectId" required>
+                    </div>
+                    <button id="getProjectBtn" class="btn btn-info me-2">Get Info</button>
+                    <button id="startProjectBtn" class="btn btn-success me-2">Start</button>
+                    <button id="stopProjectBtn" class="btn btn-danger">Stop</button>
+                </div>
+            </div>
+            <div id="projectOutput" class="output"></div>
+        </div>
+
+        <div class="section" id="tgUsernameSection" style="display: none;">
+            <h2>Telegram Username (без @)</h2>
+            <form id="TgUsernameForm">
+                <div class="mb-3">
+                    <label for="user_name">Input username</label>
+                    <input type="text" class="form-control" id="user_name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Get Chat Id</button>
+            </form>
+            <div id="tgIdOutput" class="output"></div>
+        </div>
+
+        <div class="section" id="telegramSection" style="display: none;">
+            <h2>Link Telegram</h2>
+            <form id="linkTelegramForm">
+                <div class="mb-3">
+                    <label for="chatId" class="form-label">Chat ID</label>
+                    <input type="text" class="form-control" id="chatId" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Link</button>
+            </form>
+            <div id="telegramOutput" class="output"></div>
+        </div>
+
+        <button id="logoutBtn" class="btn btn-secondary" style="display: none;">Logout</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = '/api';
+        let token = localStorage.getItem('pingerToken');
+
+        function showOutput(elementId, message, isError = false) {
+            const output = document.getElementById(elementId);
+            output.innerHTML = `<pre class="${isError ? 'text-danger' : ''}">${message}</pre>`;
+        }
+
+        function handleAuthResponse(response, formId) {
+            if (response.access_token) {
+                token = response.access_token;
+                localStorage.setItem('pingerToken', token);
+                showOutput('authOutput', 'Success! Token received.');
+                toggleSections(true);
+            } else {
+                showOutput('authOutput', JSON.stringify(response), true);
+            }
+        }
+
+        function toggleSections(isLoggedIn) {
+            document.getElementById('tgUsernameSection').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('projectsSection').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('telegramSection').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('logoutBtn').style.display = isLoggedIn ? 'block' : 'none';
+        }
+
+        if (token) {
+            toggleSections(true);
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                handleAuthResponse(data, 'registerForm');
+            } catch (err) {
+                showOutput('authOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                handleAuthResponse(data, 'loginForm');
+            } catch (err) {
+                showOutput('authOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('createProjectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('projectName').value,
+                type: document.getElementById('projectType').value,
+                url: document.getElementById('projectUrl').value || null,
+                host: document.getElementById('projectHost').value || null,
+                port: parseInt(document.getElementById('projectPort').value) || null,
+                headers: JSON.parse(document.getElementById('projectHeaders').value || '{}'),
+                interval_s: parseInt(document.getElementById('projectInterval').value),
+                timeout_s: parseInt(document.getElementById('projectTimeout').value),
+                stop_on_error: document.getElementById('projectStopOnError').checked
+            };
+            try {
+                const res = await fetch(`${API_BASE}/projects/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const response = await res.json();
+                showOutput('projectOutput', JSON.stringify(response));
+            } catch (err) {
+                showOutput('projectOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('getProjectBtn').addEventListener('click', async () => {
+            const projectId = document.getElementById('projectId').value;
+            try {
+                const res = await fetch(`${API_BASE}/projects/by-name/${projectId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                showOutput('projectOutput', JSON.stringify(data));
+            } catch (err) {
+                showOutput('projectOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('startProjectBtn').addEventListener('click', async () => {
+            const projectId = document.getElementById('projectId').value;
+            try {
+                const res = await fetch(`${API_BASE}/projects/${projectId}/start`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                showOutput('projectOutput', JSON.stringify(data));
+            } catch (err) {
+                showOutput('projectOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('stopProjectBtn').addEventListener('click', async () => {
+            const projectId = document.getElementById('projectId').value;
+            try {
+                const res = await fetch(`${API_BASE}/projects/${projectId}/stop`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                showOutput('projectOutput', JSON.stringify(data));
+            } catch (err) {
+                showOutput('projectOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('linkTelegramForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const chat_id = document.getElementById('chatId').value;
+            try {
+                const res = await fetch(`${API_BASE}/telegram/link`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ chat_id })
+                });
+                const data = await res.json();
+                showOutput('telegramOutput', JSON.stringify(data));
+            } catch (err) {
+                showOutput('telegramOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('TgUsernameForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('user_name').value;
+            try {
+                const res = await fetch(`${API_BASE}/telegram/chat/${username}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ user_name: username })
+                });
+                const data = await res.json();
+                showOutput('tgIdOutput', JSON.stringify(data));
+            } catch (err) {
+                showOutput('tgIdOutput', err.message, true);
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('pingerToken');
+            token = null;
+            toggleSections(false);
+            showOutput('authOutput', 'Logged out.');
+        });
+    </script>
+</body>
+</html>

@@ -6,12 +6,12 @@ from .tg_notify import Notifier
 
 class Pinger(ABC):
     @abstractmethod
-    async def alert(self, project):
+    async def check(self, project):
         pass
 
     @staticmethod
-    async def record_error(project: Dict[str, Any], error: str, status_code: int | None = None,
-                           response_time_ms: float | None = None):
+    async def alert_error(project: Dict[str, Any], error: str, status_code: int | None = None,
+                          response_time_ms: float | None = None):
         errors = get_errors_collection()
 
         await errors.insert_one({
