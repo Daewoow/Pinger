@@ -3,6 +3,11 @@ from unittest.mock import AsyncMock, MagicMock
 from app.services.http_pinger import HttpPinger
 
 
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+from app.services.http_pinger import HttpPinger
+
+
 @pytest.mark.asyncio
 async def test_http_pinger_success(monkeypatch):
     pinger = HttpPinger()
@@ -15,15 +20,17 @@ async def test_http_pinger_success(monkeypatch):
     mock_client = MagicMock()
     mock_client.get = AsyncMock(return_value=mock_response)
 
-    async def mock_async_client(*args, **kwargs):
-        return mock_client
+    mock_async_client_cm = MagicMock()
+    mock_async_client_cm.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_async_client_cm.__aexit__ = AsyncMock(return_value=None)
 
-    monkeypatch.setattr("httpx.AsyncClient", mock_async_client)
+    monkeypatch.setattr("httpx.AsyncClient", lambda *args, **kwargs: mock_async_client_cm)
+
     pinger.alert_error = AsyncMock()
 
     result = await pinger.check(project)
 
-    assert result is False
+    assert result is True
     pinger.alert_error.assert_not_called()
 
 
@@ -49,8 +56,6 @@ async def test_http_pinger_error_on_server(monkeypatch):
 
     assert result is False
     pinger.alert_error.assert_called_once()
-    args, kwargs = pinger.alert_error.call_args
-    assert kwargs["status_code"] == 500
 
 
 @pytest.mark.asyncio

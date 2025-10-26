@@ -5,15 +5,20 @@ from app.services.tcp_pinger import TcpPinger
 from app.services.pinger import Pinger
 
 
+class DummyWriter:
+    def close(self): pass
+    async def wait_closed(self): pass
+
+
 @pytest.mark.asyncio
 async def test_tcp_pinger_success(monkeypatch):
     async def fake_open_connection(host, port):
         reader = AsyncMock()
-        writer = AsyncMock()
+        writer = DummyWriter()
         return reader, writer
 
     monkeypatch.setattr(asyncio, "open_connection", fake_open_connection)
-    monkeypatch.setattr(asyncio, "wait_for", lambda coro, timeout: coro)  # просто возвращаем coroutine
+    monkeypatch.setattr(asyncio, "wait_for", lambda coro, timeout: coro)
 
     project = {"host": "example.com", "port": 80, "timeout_s": 1}
 
@@ -33,7 +38,7 @@ async def test_tcp_pinger_connection_error(monkeypatch):
     monkeypatch.setattr(asyncio, "wait_for", lambda coro, timeout: coro)
     called = {}
 
-    async def fake_alert_error(project, msg):
+    async def fake_alert_error(self, project, msg, *args, **kwargs):
         called["project"] = project
         called["msg"] = msg
 
@@ -62,7 +67,7 @@ async def test_tcp_pinger_timeout(monkeypatch):
 
     called = {}
 
-    async def fake_alert_error(project, msg):
+    async def fake_alert_error(self, project, msg, *args, **kwargs):
         called["msg"] = msg
 
     monkeypatch.setattr(Pinger, "alert_error", fake_alert_error)
