@@ -5,6 +5,7 @@ from typing import Dict, Any
 
 
 class IcmpPinger(Pinger):
+    @Pinger.log_checking
     async def check(self, project: Dict[str, Any]):
         target = project.get("host") or project.get("url")
 

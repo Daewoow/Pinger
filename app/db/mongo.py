@@ -18,7 +18,7 @@ def get_projects_collection():
 
 def close_mongo_client():
     global _mongo_client
-    if _mongo_client is not None and _mongo_client.is_connected():
+    if _mongo_client is not None:
         _mongo_client.close()
 
 

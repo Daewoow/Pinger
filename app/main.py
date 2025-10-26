@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 
 from starlette.staticfiles import StaticFiles
 
-from app.api.routes import auth, projects, teleram
+from app.api.routes import auth, projects, teleram, users
 from app.db.mongo import get_mongo_client, close_mongo_client
 from app.db.pg import connect_to_pg, close_pg
 from app.core.scheduler import restore_running_projects
@@ -34,9 +34,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth.router, prefix="/api/auth")
 app.include_router(projects.router, prefix="/api/projects")
 app.include_router(teleram.router, prefix="/api/telegram")
+app.include_router(users.router, prefix="/api/users")
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, summary="Just frontend", description="Not description")
 async def serve_frontend(request: Request):
     with open("static/index.html") as f:
         return HTMLResponse(content=f.read())

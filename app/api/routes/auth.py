@@ -1,17 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
+from starlette import status
+
 from app.db.pg import get_db
 from app.models.pydantic_models import UserCreate, TokenResponse
 from app.models.pg_models import User
 from app.core.security import hash_password, verify_password
 from app.core.jwt import create_access_token
-from app.config import settings
 
 
 router = APIRouter()
 
 
-@router.post("/register", response_model=TokenResponse)
+@router.post("/register", response_model=TokenResponse, summary="Register a new user",
+             status_code=status.HTTP_201_CREATED)
 async def register(u: UserCreate, db=Depends(get_db)):
     stmt = select(User).filter_by(email=u.email)
     res = await db.execute(stmt)

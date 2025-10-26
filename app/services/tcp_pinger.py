@@ -4,6 +4,7 @@ from typing import Dict, Any
 
 
 class TcpPinger(Pinger):
+    @Pinger.log_checking
     async def check(self, project: Dict[str, Any]):
         host = project.get("host") or project.get("url")
         port = project.get("port") or 80

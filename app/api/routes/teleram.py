@@ -25,7 +25,6 @@ async def get_chat_id(user_name: str):
             )
             response.raise_for_status()
             data = response.json()
-            print(f"Telegram API response: {data}")
 
             if not data.get("ok") or not data.get("result"):
                 raise HTTPException(status_code=404, detail="No updates found")

@@ -18,7 +18,7 @@ async def _run_project_loop(project_doc):
     errors_coll = get_errors_collection()
 
     while True:
-        project = await projects_coll.find_one({"_id": ObjectId(project_id)})
+        project = await projects_coll.find_one({"_id": project_id})
         if not project or project.get("status") != "running":
             print(f"Project {project_id} stopped or not found, exiting loop")
             break
@@ -41,6 +41,7 @@ async def _run_project_loop(project_doc):
             {"$set": {"last_run_at": datetime.now(tz=timezone.utc).isoformat()}}
         )
 
+        # Подумать, надо или оно вообще, так-то и из пингера выводится.
         if not ok and project_doc.get("stop_on_error", True):
             await errors_coll.insert_one({
                 "_id": str(ObjectId()),
@@ -51,7 +52,7 @@ async def _run_project_loop(project_doc):
             })
 
             await projects_coll.update_one(
-                {"_id": ObjectId(project_id)},
+                {"_id": project_id},
                 {"$set": {"status": "stopped"}}
             )
 
@@ -60,13 +61,15 @@ async def _run_project_loop(project_doc):
                 try:
                     await Notifier().send_telegram(
                         chat,
-                        f"[Monitoring] Project {project_doc.get('name')} "
+                        f"[From scheduler] Project {project.get('name')};\n"
+                        f"Host: {project.get('host')};\n"
+                        f"Url: {project.get('url')};\n"
                         f"stopped due to error: {error_message or 'Check failed'}"
                     )
                 except Exception as e:
                     print(f"Failed to send Telegram notification for project {project_id}: {e}")
 
-            print(f"Project {project_id} stopped due to error")
+            print(f"Project {project_id} stopped")
             break
 
         await asyncio.sleep(interval)

@@ -67,6 +67,23 @@ async def start_project(project_id: str, user=Depends(get_current_user)):
     return {"ok": True}
 
 
+@router.get("/")
+async def get_projects():
+    coll = get_projects_collection()
+    projects = coll.find({})
+    return {"projects": [p async for p in projects]}
+
+
+@router.delete("/")
+async def delete_projects():
+    coll = get_projects_collection()
+    try:
+        coll.delete_many({})
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e)
+
+
 @router.get("/{project_id}", summary="Информация о проекте")
 async def get_project_info(project_id: str, user=Depends(get_current_user)):
     try:
