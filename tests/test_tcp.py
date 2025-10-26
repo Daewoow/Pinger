@@ -38,7 +38,7 @@ async def test_tcp_pinger_connection_error(monkeypatch):
     monkeypatch.setattr(asyncio, "wait_for", lambda coro, timeout: coro)
     called = {}
 
-    async def fake_alert_error(self, project, msg, *args, **kwargs):
+    async def fake_alert_error(self, project, msg):
         called["project"] = project
         called["msg"] = msg
 
@@ -56,10 +56,10 @@ async def test_tcp_pinger_connection_error(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_tcp_pinger_timeout(monkeypatch):
-    async def fake_open_connection(host, port):
+    async def fake_open_connection():
         await asyncio.sleep(999)
 
-    async def fake_wait_for(coro, timeout):
+    async def fake_wait_for():
         raise asyncio.TimeoutError("timeout")
 
     monkeypatch.setattr(asyncio, "open_connection", fake_open_connection)

@@ -13,7 +13,7 @@ async def get_users(db=Depends(get_db)):
     return {"users": users}
 
 
-@router.get("/user/{id}")
-async def get_user_by_id(id: str, db=Depends(get_db)):
-    res = await db.execute(select(User).where(User.id == id))
+@router.get("/user/{user_id}")
+async def get_user_by_id(user_id: str, db=Depends(get_db)):
+    res = await db.execute(select(User).where(User.id == user_id))
     return {"user": res.scalar().first()}

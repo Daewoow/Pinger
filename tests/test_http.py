@@ -3,11 +3,6 @@ from unittest.mock import AsyncMock, MagicMock
 from app.services.http_pinger import HttpPinger
 
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock
-from app.services.http_pinger import HttpPinger
-
-
 @pytest.mark.asyncio
 async def test_http_pinger_success(monkeypatch):
     pinger = HttpPinger()
